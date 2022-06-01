@@ -15,20 +15,31 @@ namespace TelegramBot.Services
 
         public int CreateConfirmationCode(string _phoneNumber)
         {
-            var rnd=new Random();
+            int codeCache;
+            if(cache.TryGetValue(_phoneNumber, out codeCache))
+                return codeCache;
+            var rnd = new Random();
             int code = rnd.Next(1000, 9999);
             cache.Set(_phoneNumber, code, new MemoryCacheEntryOptions
             {
                 AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5)
             });
-            return code ;
+            return code;
+        }
+
+        public int ShowConfirmationCode(string _phoneNumber)
+        {
+            int code;
+            if (cache.TryGetValue(_phoneNumber, out code))
+            {
+                return code;
+            }
+            return 0;
         }
         public void SavePhoneInCache(long chatId,string phoneNumberCache)
         {
-            cache.Set(chatId, phoneNumberCache, new MemoryCacheEntryOptions
-            {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10)
-            });
+            var cacheentryoptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(5));
+            cache.Set(chatId, phoneNumberCache,cacheentryoptions);
         }
 
         public async Task<bool> SetPhoneFromCache(Update update)

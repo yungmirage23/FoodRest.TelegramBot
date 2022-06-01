@@ -22,16 +22,21 @@ namespace TelegramBot.Commands
         public async override Task ExecuteAsync(Update update)
         {
             var user = await userService.GetOrCreate(update);
-            var inlineKeyboard = new ReplyKeyboardMarkup(new[]
+            if (user.PhoneNumber==null)
             {
-                new[]
+                var inlineKeyboard = new ReplyKeyboardMarkup(new[]
                 {
-                    KeyboardButton.WithRequestContact("Подтвердить свой номер телефона")
-                }
-            });
-            inlineKeyboard.ResizeKeyboard = true;
-            inlineKeyboard.OneTimeKeyboard = true;
-            await botClient.SendTextMessageAsync(user.Id, $"Добро пожаловать ,{user.FirstName}!",ParseMode.Markdown,replyMarkup:inlineKeyboard);
+                    new[]
+                    {
+                        KeyboardButton.WithRequestContact("Ввести свой номер телефона")
+                    }
+                });
+                inlineKeyboard.ResizeKeyboard = true;
+                inlineKeyboard.OneTimeKeyboard = true;
+                await botClient.SendTextMessageAsync(user.Id, $"Добро пожаловать ,{user.FirstName}!", ParseMode.Markdown, replyMarkup: inlineKeyboard);
+            }
+            else
+                await botClient.SendTextMessageAsync(user.Id, $"Вы уже успешно привязали свой номер телефона!({user.PhoneNumber})", ParseMode.Markdown);
         }
     }
 }
