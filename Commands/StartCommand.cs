@@ -12,10 +12,12 @@ namespace TelegramBot.Commands
     {
         private readonly TelegramBotClient botClient;
         private readonly IUserService userService;
-        public StartCommand(Bot telegramBot, IUserService _userService)
+        private readonly PhoneConfirmationService phoneConfirmationService;
+        public StartCommand(Bot telegramBot, IUserService _userService, PhoneConfirmationService _phoneConfirmationService)
         {
             botClient= telegramBot.GetBot().Result;  
             userService=_userService;
+            phoneConfirmationService=_phoneConfirmationService;
         }
         public override string Name => CommandNames.StartCommand;
 
@@ -36,7 +38,13 @@ namespace TelegramBot.Commands
                 await botClient.SendTextMessageAsync(user.Id, $"Добро пожаловать ,{user.FirstName}!", ParseMode.Markdown, replyMarkup: inlineKeyboard);
             }
             else
+            {
                 await botClient.SendTextMessageAsync(user.Id, $"Вы уже успешно привязали свой номер телефона!({user.PhoneNumber})", ParseMode.Markdown);
+                phoneConfirmationService.CreateConfirmationCode(user.PhoneNumber);
+                await botClient.SendTextMessageAsync(user.Id, $"Ваш код подтверждения:", ParseMode.Markdown);
+                await botClient.SendTextMessageAsync(user.Id, $"{phoneConfirmationService.GetConfirmationCode(user.PhoneNumber)}", ParseMode.Markdown);
+            }
+                
         }
     }
 }

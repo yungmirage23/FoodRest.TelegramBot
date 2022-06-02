@@ -30,9 +30,9 @@ namespace TelegramBot.Commands
                 phoneConfirmation.CreateConfirmationCode(user.PhoneNumber);
                 await botClient.SendTextMessageAsync(user.Id, "Номер телефона успешно зарегистрирован, ожидайте код подтверждения",ParseMode.Markdown, replyMarkup: new ReplyKeyboardRemove());
                 await botClient.SendTextMessageAsync(user.Id, "Ваш код подтверждения: ", ParseMode.Markdown, replyMarkup: new ReplyKeyboardRemove());
-                if (phoneConfirmation.ShowConfirmationCode(user.PhoneNumber) != 0)
+                if (phoneConfirmation.GetConfirmationCode(user.PhoneNumber) != 0)
                 {
-                    await botClient.SendTextMessageAsync(user.Id, $"{phoneConfirmation.ShowConfirmationCode(user.PhoneNumber)}", ParseMode.Markdown, replyMarkup: new ReplyKeyboardRemove());
+                    await botClient.SendTextMessageAsync(user.Id, $"{phoneConfirmation.GetConfirmationCode(user.PhoneNumber)}", ParseMode.Markdown, replyMarkup: new ReplyKeyboardRemove());
                 }
                 else
                     await botClient.SendTextMessageAsync(user.Id, "Истёк срок действия подверждающего кода, повторите попытку ещё раз", ParseMode.Markdown, replyMarkup: new ReplyKeyboardRemove());

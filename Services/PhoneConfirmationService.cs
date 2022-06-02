@@ -22,12 +22,12 @@ namespace TelegramBot.Services
             int code = rnd.Next(1000, 9999);
             cache.Set(_phoneNumber, code, new MemoryCacheEntryOptions
             {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5)
+                SlidingExpiration = TimeSpan.FromMinutes(5)
             });
             return code;
         }
 
-        public int ShowConfirmationCode(string _phoneNumber)
+        public int GetConfirmationCode(string _phoneNumber)
         {
             int code;
             if (cache.TryGetValue(_phoneNumber, out code))
@@ -39,7 +39,7 @@ namespace TelegramBot.Services
         public void SavePhoneInCache(long chatId,string phoneNumberCache)
         {
             var cacheentryoptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(5));
-            cache.Set(chatId, phoneNumberCache,cacheentryoptions);
+            cache.Set(chatId, phoneNumberCache.Replace("+",""), cacheentryoptions);
         }
 
         public async Task<bool> SetPhoneFromCache(Update update)
