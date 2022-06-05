@@ -1,7 +1,9 @@
 ﻿using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using TelegramBot.Commands;
+using TelegramBot.Entities;
 using TelegramBot.Models;
+using TelegramBot.Models.DataContext;
 
 namespace TelegramBot.Services
 {
@@ -9,48 +11,54 @@ namespace TelegramBot.Services
     {
         private readonly List<BaseCommand> commands;
         private BaseCommand lastCommand;
-        public CommandExecutor(IServiceProvider _provider)
+        private UserDataContext dataContext;
+        private IUserService userService;
+        public CommandExecutor(IServiceProvider _provider, UserDataContext _dataContext, IUserService _userService)
         {
-            commands=_provider.GetServices<BaseCommand>().ToList();
+            dataContext=_dataContext;
+            commands = _provider.GetServices<BaseCommand>().ToList();
+            userService= _userService;
         }
-
         public async Task Execute(Update update)
         {
             if (update.Message.Chat == null && update.CallbackQuery == null) return;
-            if (update.Message.Type == MessageType.Contact && update.Message.Contact != null)
-            {
-                await ExecuteCommand(CommandNames.AskCommand, update);
-            }
-            if (update.Type == UpdateType.Message)
+            var user= await userService.GetOrCreate(update);
+            if (update.Type == UpdateType.Message )
             {
                 switch (update.Message?.Text)
                 {
                     case "/start":
-                        await ExecuteCommand(CommandNames.StartCommand, update);
+                        await ExecuteCommand(CommandNames.StartCommand, update, user);
                         return;
                 }
             }
+            if (update.Message.Type == MessageType.Contact && update.Message.Contact != null)
+            {
+                await ExecuteCommand(CommandNames.AskCommand, update, user);
+                return;
+            }
 
-            switch (lastCommand?.Name)
+            string? userLocation = dataContext?.Users?.FirstOrDefault(u => u.Id == update.Message.Chat.Id)?.State;
+            switch (userLocation)
             {
                 case CommandNames.AskCommand:
                     switch (update.Message.Text)
                     {
                         case "Да":
-                            await ExecuteCommand(CommandNames.ConfirmCommand,update);
+                            await ExecuteCommand(CommandNames.ConfirmCommand,update, user);
                             return;
                         case "Нет":
-                            await ExecuteCommand(CommandNames.StartCommand,update);
+                            await ExecuteCommand(CommandNames.StartCommand,update, user);
                             return;
                     }
                     break;
             }
         }
-
-        private async Task ExecuteCommand(string commandName, Update update)
+        private async Task ExecuteCommand(string commandName, Update update, AppUser user)
         {
             lastCommand = commands.First(x => x.Name == commandName);
-            await lastCommand.ExecuteAsync(update);
+            await lastCommand.ExecuteAsync(update, user);
+            await userService.UserMove(user, commandName);
         }
     }
 }

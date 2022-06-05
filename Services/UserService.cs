@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using TelegramBot.Commands;
 using TelegramBot.Entities;
 using TelegramBot.Models.DataContext;
 
@@ -25,6 +26,7 @@ namespace TelegramBot.Services
                     FirstName = update.CallbackQuery.Message.From.FirstName,
                     LastName = update.CallbackQuery.Message.From.LastName,
                     Id = update.CallbackQuery.Message.Chat.Id,
+                    State = "/start"
                 },
                 UpdateType.Message => new AppUser
                 {
@@ -32,6 +34,7 @@ namespace TelegramBot.Services
                     FirstName = update.Message.Chat.FirstName,
                     LastName = update.Message.Chat.LastName,
                     Id = update.Message.Chat.Id,
+                    State = "/start"
                 }
             };
             var user = await dataContext.Users.FirstOrDefaultAsync(user => user.Id == newUser.Id);
@@ -40,6 +43,13 @@ namespace TelegramBot.Services
             var result = await dataContext.AddAsync(newUser);
             await dataContext.SaveChangesAsync();
             return result.Entity;
+        }
+
+        public async Task<AppUser> UserMove(AppUser _user,string _commandName)
+        {
+            _user.State = _commandName;
+            await dataContext.SaveChangesAsync();
+            return _user;
         }
 
         public async Task<AppUser> SetUserPhone(long chatId,string _cachePhoneNumber)

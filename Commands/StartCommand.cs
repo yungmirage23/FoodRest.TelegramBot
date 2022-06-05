@@ -11,19 +11,16 @@ namespace TelegramBot.Commands
     public class StartCommand:BaseCommand
     {
         private readonly TelegramBotClient botClient;
-        private readonly IUserService userService;
         private readonly PhoneConfirmationService phoneConfirmationService;
-        public StartCommand(Bot telegramBot, IUserService _userService, PhoneConfirmationService _phoneConfirmationService)
+        public StartCommand(Bot telegramBot,PhoneConfirmationService _phoneConfirmationService)
         {
-            botClient= telegramBot.GetBot().Result;  
-            userService=_userService;
+            botClient= telegramBot.GetBot().Result;
             phoneConfirmationService=_phoneConfirmationService;
         }
         public override string Name => CommandNames.StartCommand;
 
-        public async override Task ExecuteAsync(Update update)
+        public async override Task ExecuteAsync(Update update, AppUser user)
         {
-            var user = await userService.GetOrCreate(update);
             if (user.PhoneNumber==null)
             {
                 var inlineKeyboard = new ReplyKeyboardMarkup(new[]

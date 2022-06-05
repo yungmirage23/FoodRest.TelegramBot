@@ -8,14 +8,15 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 string identityConntection = builder.Configuration.GetConnectionString("TelegramDbConnection");
 builder.Services.AddControllers().AddNewtonsoftJson();
-builder.Services.AddDbContext<UserDataContext>(opts => opts.UseSqlServer(identityConntection),ServiceLifetime.Singleton);
-builder.Services.AddSingleton<IUserService, UserService>();
+builder.Services.AddDbContext<UserDataContext>(opts => opts.UseSqlServer(identityConntection),ServiceLifetime.Scoped);
+builder.Services.AddTransient<IUserService, UserService>();
+builder.Services.AddTransient<PhoneConfirmationService>();
+
 builder.Services.AddSingleton<Bot>();
-builder.Services.AddSingleton<ICommandExecutor, CommandExecutor>();
-builder.Services.AddSingleton<PhoneConfirmationService>();
-builder.Services.AddSingleton<BaseCommand, StartCommand>();
-builder.Services.AddSingleton<BaseCommand, ConfirmCommand>();
-builder.Services.AddSingleton<BaseCommand, AskCommand>();
+builder.Services.AddScoped<ICommandExecutor, CommandExecutor>();
+builder.Services.AddScoped<BaseCommand, StartCommand>();
+builder.Services.AddScoped<BaseCommand, ConfirmCommand>();
+builder.Services.AddScoped<BaseCommand, AskCommand>();
 
 builder.Services.AddMemoryCache();
 var app = builder.Build();

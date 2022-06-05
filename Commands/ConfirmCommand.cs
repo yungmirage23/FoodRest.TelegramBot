@@ -12,19 +12,16 @@ namespace TelegramBot.Commands
     {
         private readonly PhoneConfirmationService phoneConfirmation;
         private readonly TelegramBotClient botClient;
-        private readonly IUserService userService;
 
-        public ConfirmCommand(Bot telegrambot,IUserService _userService, PhoneConfirmationService _phoneConfirmation)
+        public ConfirmCommand(Bot telegrambot,PhoneConfirmationService _phoneConfirmation)
         {
-            userService = _userService;
             botClient = telegrambot.GetBot().Result;
             phoneConfirmation = _phoneConfirmation;
         }
         public override string Name => CommandNames.ConfirmCommand;
 
-        public async override Task ExecuteAsync(Update update)
+        public async override Task ExecuteAsync(Update update, AppUser user)
         {
-            var user=await userService.GetOrCreate(update);
             if (await phoneConfirmation.SetPhoneFromCache(update))
             {
                 phoneConfirmation.CreateConfirmationCode(user.PhoneNumber);
@@ -35,8 +32,9 @@ namespace TelegramBot.Commands
                     await botClient.SendTextMessageAsync(user.Id, $"{phoneConfirmation.GetConfirmationCode(user.PhoneNumber)}", ParseMode.Markdown, replyMarkup: new ReplyKeyboardRemove());
                 }
                 else
+                {
                     await botClient.SendTextMessageAsync(user.Id, "Истёк срок действия подверждающего кода, повторите попытку ещё раз", ParseMode.Markdown, replyMarkup: new ReplyKeyboardRemove());
-
+                }
             } 
             else await botClient.SendTextMessageAsync(user.Id, "Произошла ошибка при регистрации номера телефона", ParseMode.Markdown, replyMarkup: new ReplyKeyboardRemove());
 
