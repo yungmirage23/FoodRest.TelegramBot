@@ -21,8 +21,8 @@ namespace TelegramBot.Controllers
             dataContext= _dataContext;
             telegramClient = _telegrambot.GetBot().Result;
         }
-        [HttpGet]
-        public async Task<int> Get(string phoneNumber)
+        [HttpPost]
+        public async Task<int> Post([FromBody]string phoneNumber)
         {
             var user =dataContext.Users.FirstOrDefault(p => p.PhoneNumber == phoneNumber);
             var code =confirmationServiceservice.CreateConfirmationCode(phoneNumber);

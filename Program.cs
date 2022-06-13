@@ -17,7 +17,7 @@ builder.Services.AddScoped<ICommandExecutor, CommandExecutor>();
 builder.Services.AddScoped<BaseCommand, StartCommand>();
 builder.Services.AddScoped<BaseCommand, ConfirmCommand>();
 builder.Services.AddScoped<BaseCommand, AskCommand>();
-
+builder.WebHost.UseUrls("http://localhost:8443");
 builder.Services.AddMemoryCache();
 var app = builder.Build();
 app.Services.GetRequiredService<Bot>().GetBot().Wait();

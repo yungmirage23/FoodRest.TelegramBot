@@ -12,7 +12,7 @@
     "TelegramBot": {
       "commandName": "Project",
       "dotnetRunMessages": true,
-      "launchBrowser": true,
+      "launchBrowser": false,
       "launchUrl": "",
       "applicationUrl": "http://localhost:8443",
       "environmentVariables": {
